@@ -19,15 +19,16 @@ int lush_exit(char **args);
 
 int lush_exec(char **args);
 
-string builtin_str[] = {"cd", "help", "exit"};
+const char *builtin_str[] = {"cd", "help", "exit"};
 
 int (*builtin_func[])(char **) = {&lush_cd, &lush_help, &lush_exit};
 
 int main(int argc, char **argv) {
-  for (int i = 0; i < argc; i++) {
-    cout << argv[i] << ' ';
-  }
-  putchar('\n');
+  (void)argc;
+  (void)argv;
+
+  lush_loop();
+
   return 0;
 }
 
@@ -37,7 +38,7 @@ void lush_loop(void) {
   int status;
 
   do {
-    cout << '> ';
+    cout << "> ";
     line = lush_read_line();
     args = lush_split_line(line);
     status = lush_exec(args);
@@ -49,7 +50,7 @@ void lush_loop(void) {
 
 char *lush_read_line(void) {
   int bufsize = LUSH_RL_BUFSIZE;
-  int position;
+  int position = 0;
   char *buffer = new char[bufsize];
   int c;
 
@@ -117,7 +118,6 @@ char **lush_split_line(char *line) {
 
 int lush_launch(char **args) {
   pid_t pid;
-  pid_t wpid;
   int status;
 
   pid = fork();
@@ -131,14 +131,14 @@ int lush_launch(char **args) {
     cerr << "lsh";
   } else {
     do {
-      wpid = waitpid(pid, &status, WUNTRACED);
+      waitpid(pid, &status, WUNTRACED);
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
   }
 
   return 1;
 }
 
-int lush_num_builtins() { return sizeof(builtin_str.c_str()) / sizeof(char *); }
+int lush_num_builtins() { return sizeof(builtin_str) / sizeof(char *); }
 
 int lush_cd(char **args) {
   if (args[1] == NULL) {
@@ -152,6 +152,7 @@ int lush_cd(char **args) {
 }
 
 int lush_help(char **args) {
+  (void)args;
   int i;
   cout << "Luca's lush\n";
   cout << "Type program names and arguments, and hit enter.\n";
@@ -162,8 +163,13 @@ int lush_help(char **args) {
   }
 
   cout << "Use the man command for information on other programs.\n";
+  return 1;
 }
-int lush_exit(char **args) { return 0; }
+
+int lush_exit(char **args) {
+  (void)args;
+  return 0;
+}
 
 int lush_exec(char **args) {
   int i;
@@ -174,7 +180,7 @@ int lush_exec(char **args) {
   }
 
   for (i = 0; i < lush_num_builtins(); i++) {
-    if (strcmp(args[0], builtin_str[i].c_str()) == 0) {
+    if (strcmp(args[0], builtin_str[i]) == 0) {
       return (*builtin_func[i])(args);
     }
   }
