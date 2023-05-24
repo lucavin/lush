@@ -1,11 +1,15 @@
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <unistd.h>
+#include <vector>
 
 using namespace std;
 
 #define INPUT_SIZE 1024
 
 void lush_loop();
+void split_input(std::string input, vector<string> *args);
 
 int main(int argc, char *argv[]) {
   (void)argc;
@@ -23,22 +27,37 @@ int main(int argc, char *argv[]) {
 // run input
 // loop
 void lush_loop() {
-  char *input = new char[INPUT_SIZE];
-  char **args = new char *[1];
+  string input;
+  vector<string> args;
 
   while (true) {
-    cout << "> ";
-    read_input(input);
-    split_input(input, args);
-    exec_input(args);
-  }
+    cout << "\n> ";
+    getline(cin, input);
 
-  delete input;
-  delete[] args;
+    if (input == "") {
+      continue;
+    }
+
+    split_input(input, &args);
+
+    for (string i : args) {
+      cout << i << '\n';
+    }
+    args.clear();
+  }
 }
 
 // fn lush_read_line
 // take command input
+void split_input(string input, vector<string> *args) {
+  istringstream ss(input);
+
+  string argument;
+
+  while (ss >> argument) {
+    args->push_back(argument);
+  }
+}
 
 // fn split_line
 // split line into args
